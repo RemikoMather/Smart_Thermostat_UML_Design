@@ -1,0 +1,60 @@
+@startuml Smart_Thermostat_Use_Case_Diagram
+!theme plain
+title Smart Thermostat System - Use Case Diagram
+
+' Actors
+actor Homeowner as HO
+actor Installer as IN
+actor "HVAC System" as HVAC <<system>>
+actor "Weather Service" as WS <<external>>
+
+' System boundary
+rectangle "Smart Thermostat System" {
+  
+  ' Primary Use Cases
+  usecase "Set Temperature" as UC1
+  usecase "Create Schedule" as UC2
+  usecase "View Energy Report" as UC3
+  usecase "Configure WiFi" as UC4
+  usecase "Install Device" as UC5
+  usecase "Calibrate Sensors" as UC6
+  usecase "Set Away Mode" as UC7
+  usecase "Receive Weather Updates" as UC8
+  usecase "Control HVAC" as UC9
+  usecase "Monitor Energy Usage" as UC10
+  usecase "Send Alerts" as UC11
+  usecase "Update Firmware" as UC12
+  usecase "Authenticate User" as UC13
+  usecase "Adjust Temperature\nAutomatically" as UC14
+  
+  ' Include relationships
+  UC1 ..> UC13 : <<include>>
+  UC2 ..> UC13 : <<include>>
+  UC3 ..> UC13 : <<include>>
+  UC7 ..> UC13 : <<include>>
+  UC1 ..> UC9 : <<include>>
+  UC2 ..> UC9 : <<include>>
+  UC7 ..> UC9 : <<include>>
+  
+  ' Extend relationships
+  UC1 ..> UC14 : <<extend>>
+  UC8 ..> UC14 : <<extend>>
+  UC10 ..> UC11 : <<extend>>
+}
+
+' Actor associations
+HO -- UC1
+HO -- UC2
+HO -- UC3
+HO -- UC7
+HO -- UC12
+
+IN -- UC4
+IN -- UC5
+IN -- UC6
+
+HVAC -- UC9
+
+WS -- UC8
+
+@enduml

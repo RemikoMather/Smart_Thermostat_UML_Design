@@ -1,0 +1,98 @@
+@startuml Smart_Thermostat_Deployment_Diagram
+!theme plain
+title Smart Thermostat System - Deployment Diagram
+
+' Cloud Infrastructure
+node "Cloud Server" <<execution environment>> {
+  artifact "ThermostatAPI.jar" as API
+  artifact "UserDatabase" as DB
+  artifact "AnalyticsService.jar" as Analytics
+  database "User Data Store" as DataStore
+  
+  API -- DB
+  Analytics -- DataStore
+}
+
+' User's Smartphone
+node "User's Smartphone" <<device>> {
+  node "iOS/Android OS" <<execution environment>> {
+    artifact "MobileApp.apk/.ipa" as MobileApp
+  }
+}
+
+' Smart Thermostat Device
+node "Smart Thermostat" <<device>> {
+  node "Embedded Linux" <<execution environment>> {
+    artifact "ThermostatFirmware.jar" as Firmware
+    artifact "SensorDriver.so" as SensorDriver
+    artifact "WiFiModule.so" as WiFiModule
+  }
+  
+  component "Temperature Sensor" <<hardware>>
+  component "Humidity Sensor" <<hardware>>
+  component "Display Screen" <<hardware>>
+  component "WiFi Chip" <<hardware>>
+  
+  Firmware -- SensorDriver
+  Firmware -- WiFiModule
+  SensorDriver -- "Temperature Sensor"
+  SensorDriver -- "Humidity Sensor"
+  WiFiModule -- "WiFi Chip"
+}
+
+' HVAC System
+node "HVAC Unit" <<device>> {
+  component "Heating System" <<hardware>>
+  component "Cooling System" <<hardware>>
+  component "Fan System" <<hardware>>
+  artifact "HVACController.hex" as HVACControl
+  
+  HVACControl -- "Heating System"
+  HVACControl -- "Cooling System"
+  HVACControl -- "Fan System"
+}
+
+' Home WiFi Router
+node "Home WiFi Router" <<device>> {
+  component "WiFi Access Point" <<hardware>>
+}
+
+' External Weather Service
+cloud "Weather Service API" <<external system>> {
+  artifact "WeatherData API" as WeatherAPI
+}
+
+' Communication Paths
+"User's Smartphone" -- "Home WiFi Router" : WiFi\n(802.11 b/g/n/ac)
+"Smart Thermostat" -- "Home WiFi Router" : WiFi\n(802.11 b/g/n)
+"Home WiFi Router" -- "Cloud Server" : HTTPS\n(Internet)
+"Smart Thermostat" -- "HVAC Unit" : C-Wire/24VAC\n(Control Signal)
+"Cloud Server" -- "Weather Service API" : HTTPS/REST API
+
+' Notes
+note right of "Smart Thermostat"
+  Primary Hub:
+  - Processes temperature data
+  - Controls HVAC directly
+  - Syncs with cloud
+  - Low power consumption
+end note
+
+note right of "Cloud Server"
+  Backend Services:
+  - User authentication
+  - Schedule storage
+  - Energy analytics
+  - Mobile app API
+  - Firmware updates
+end note
+
+note left of "User's Smartphone"
+  User Interface:
+  - Remote control
+  - Schedule management
+  - Energy reports
+  - Notifications
+end note
+
+@enduml

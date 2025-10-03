@@ -1,0 +1,97 @@
+@startuml Smart_Thermostat_Sequence_Diagram
+!theme plain
+title Sequence Diagram - User Sets Temperature via Mobile App
+
+actor Homeowner as HO
+participant ":MobileApp" as MA
+participant ":CloudServer" as CS
+participant ":ThermostatController" as TC
+participant ":TemperatureSensor" as TS
+participant ":HVACUnit" as HVAC
+
+' Scenario: User sets new temperature
+HO -> MA : Open app
+activate MA
+
+MA -> CS : Request authentication
+activate CS
+CS --> MA : Authentication token
+deactivate CS
+
+MA --> HO : Display current temperature\nand controls
+
+HO -> MA : Set temperature to 72°F
+activate MA
+
+MA -> MA : Validate input
+MA -> CS : Send temperature update\n(72°F, timestamp, device_id)
+activate CS
+
+CS -> CS : Log request
+CS -> TC : Forward temperature command\n(72°F)
+activate TC
+
+TC -> TC : Authenticate command
+TC -> TS : Read current temperature
+activate TS
+TS --> TC : Return 68°F
+deactivate TS
+
+TC -> TC : Calculate required action\n(Need heating: 72°F > 68°F)
+
+TC -> HVAC : Send command\n(HEAT, target: 72°F)
+activate HVAC
+HVAC -> HVAC : Start heating system
+HVAC --> TC : Acknowledge command
+deactivate HVAC
+
+TC -> CS : Send status update\n(heating, target: 72°F)
+CS -> MA : Push notification\n(heating started)
+MA --> HO : Display "Heating to 72°F"
+
+deactivate TC
+deactivate CS
+
+' Monitoring loop
+loop Every 30 seconds until target reached
+    TC -> TS : Read current temperature
+    activate TC
+    activate TS
+    TS --> TC : Return temperature
+    deactivate TS
+    
+    TC -> CS : Send temperature update
+    activate CS
+    CS -> MA : Push current temperature
+    activate MA
+    MA --> HO : Update display
+    deactivate MA
+    deactivate CS
+    deactivate TC
+end
+
+' Target reached
+TC -> TS : Read current temperature
+activate TC
+activate TS
+TS --> TC : Return 72°F
+deactivate TS
+
+TC -> HVAC : Send command (IDLE)
+activate HVAC
+HVAC -> HVAC : Stop heating
+HVAC --> TC : Acknowledge
+deactivate HVAC
+
+TC -> CS : Target reached notification
+activate CS
+CS -> MA : Push notification\n(Target temperature reached)
+activate MA
+MA --> HO : Display "72°F - Target reached"
+deactivate MA
+deactivate CS
+deactivate TC
+
+deactivate MA
+
+@enduml
